@@ -1,0 +1,14 @@
+{
+  "map": [
+    ["free", "free", "free", "free", "free", "free", "free", "free", "free", "free"],
+    ["free", "free", "free", "free", "free", "free", "free", "free", "free", "free"],
+    ["road", "road", "road", "free", "road", "road", "road", "free", "road", "road"],
+    ["free", "free", "road", "free", "road", "free", "road", "free", "road", "free"],
+    ["free", "free", "road", "free", "road", "free", "road", "free", "road", "free"],
+    ["free", "free", "road", "road", "road", "free", "road", "road", "road", "free"],
+    ["free", "free", "free", "free", "free", "free", "free", "free", "free", "free"],
+    ["free", "free", "free", "free", "free", "free", "free", "free", "free", "free"],
+    ["free", "free", "free", "free", "free", "free", "free", "free", "free", "free"]
+  ],
+  "tileSize": 64
+}
