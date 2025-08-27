@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useGameStore } from '../stores/gameStore';
 import type { GameMap, PathPoint } from '../types';
 
 export const useMapLoader = () => {
   const { setGameMap, setEnemyPath } = useGameStore();
 
-  const generateEnemyPath = (gameMap: GameMap): PathPoint[] => {
+  const generateEnemyPath = useCallback((gameMap: GameMap): PathPoint[] => {
     const { map, tileSize } = gameMap;
     const path: PathPoint[] = [];
 
@@ -105,9 +105,9 @@ export const useMapLoader = () => {
     }
 
     return path;
-  };
+  }, []);
 
-  const loadMap = async () => {
+  const loadMap = useCallback(async () => {
     try {
       const response = await fetch('/map.json');
       if (!response.ok) {
@@ -145,9 +145,9 @@ export const useMapLoader = () => {
       const enemyPath = generateEnemyPath(fallbackMap);
       setEnemyPath(enemyPath);
     }
-  };
+  }, [setGameMap, setEnemyPath, generateEnemyPath]);
 
   useEffect(() => {
     loadMap();
-  }, []);
+  }, [loadMap]);
 };
