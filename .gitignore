@@ -1,33 +1,29 @@
-﻿# Logs
-*.log
-
-# Environment files
-.env
-.env.local
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
 
 # Backup files
-*.bak
-*.backup
-
-# Temporary files
-*.tmp
-*.temp
-
 # Build artifacts (if any)
-/dist/
+# Environment files
+# IDE files
+# Logs
+# OS generated files
+# Temporary files
+*.backup
+*.bak
+*.log
+*.swo
+*.swp
+*.temp
+*.tmp
+._*
+.DS_Store
+.DS_Store?
+.env
+.env.local
+.idea/
+.Spotlight-V100
+.Trashes
+.vscode/
 /build/
+/dist/
+ehthumbs.db
+mcp
+Thumbs.db
