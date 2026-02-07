@@ -213,19 +213,10 @@ We welcome contributions! Please follow our development standards:
 7. **Push to the branch**: `git push origin feature/amazing-feature`
 8. **Open a Pull Request**
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- Built with modern web technologies
-- Emoji graphics for a fun, accessible gaming experience
-- Inspired by classic tower defense games
-- Thanks to the open-source community for amazing tools
-
----
+This project is licensed under the MIT License - see the individual component README files for details.
 
 **Happy Defending! 🛡️**
 
-*Built with ❤️ using React, TypeScript, and lots of emojis*</content>
+Part of the WebHatchery game collection.</content>
