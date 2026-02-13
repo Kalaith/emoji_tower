@@ -1,6 +1,6 @@
-import React from 'react';
-import { Button } from './ui/Button';
-import { useGameStore } from '../stores/gameStore';
+import React from "react";
+import { Button } from "./ui/Button";
+import { useGameStore } from "../stores/gameStore";
 
 export const GameControls: React.FC = () => {
   const {
@@ -10,11 +10,15 @@ export const GameControls: React.FC = () => {
     startWave,
     pauseGame,
     toggleSpeed,
-    resetGame
+    resetGame,
   } = useGameStore();
 
   const handleResetGame = () => {
-    if (window.confirm('Are you sure you want to reset the game? All progress will be lost.')) {
+    if (
+      window.confirm(
+        "Are you sure you want to reset the game? All progress will be lost.",
+      )
+    ) {
       resetGame();
       localStorage.clear();
     }
@@ -22,32 +26,19 @@ export const GameControls: React.FC = () => {
 
   return (
     <div className="flex gap-3 justify-center">
-      <Button
-        onClick={startWave}
-        disabled={waveInProgress}
-        variant="primary"
-      >
-        {waveInProgress ? 'Wave In Progress' : 'Start Wave'}
+      <Button onClick={startWave} disabled={waveInProgress} variant="primary">
+        {waveInProgress ? "Wave In Progress" : "Start Wave"}
       </Button>
-      
-      <Button
-        onClick={pauseGame}
-        variant="secondary"
-      >
-        {isPaused ? 'Resume' : 'Pause'}
+
+      <Button onClick={pauseGame} variant="secondary">
+        {isPaused ? "Resume" : "Pause"}
       </Button>
-      
-      <Button
-        onClick={toggleSpeed}
-        variant="outline"
-      >
+
+      <Button onClick={toggleSpeed} variant="outline">
         Speed: {gameSpeed}x
       </Button>
-      
-      <Button
-        onClick={handleResetGame}
-        variant="danger"
-      >
+
+      <Button onClick={handleResetGame} variant="danger">
         Reset Game
       </Button>
     </div>

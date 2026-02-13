@@ -1,6 +1,6 @@
-import { useEffect, useCallback } from 'react';
-import { useGameStore } from '../stores/gameStore';
-import type { GameMap, PathPoint } from '../types';
+import { useEffect, useCallback } from "react";
+import { useGameStore } from "../stores/gameStore";
+import type { GameMap, PathPoint } from "../types";
 
 export const useMapLoader = () => {
   const { setGameMap, setEnemyPath } = useGameStore();
@@ -48,7 +48,7 @@ export const useMapLoader = () => {
       { dr: -1, dc: 0 },
       { dr: 1, dc: 0 },
       { dr: 0, dc: -1 },
-      { dr: 0, dc: 1 }
+      { dr: 0, dc: 1 },
     ];
 
     let foundPath = false;
@@ -83,7 +83,7 @@ export const useMapLoader = () => {
       // Add spawn point outside the map
       const spawnPoint: PathPoint = {
         x: -tileSize / 2,
-        y: startNode.r * tileSize + tileSize / 2
+        y: startNode.r * tileSize + tileSize / 2,
       };
       path.push(spawnPoint);
 
@@ -93,7 +93,7 @@ export const useMapLoader = () => {
       while (current) {
         pathPoints.unshift({
           x: current.c * tileSize + tileSize / 2,
-          y: current.r * tileSize + tileSize / 2
+          y: current.r * tileSize + tileSize / 2,
         });
         current = parent.get(`${current.r},${current.c}`);
       }
@@ -109,39 +109,138 @@ export const useMapLoader = () => {
 
   const loadMap = useCallback(async () => {
     try {
-      const response = await fetch('/map.json');
+      const response = await fetch("/map.json");
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const mapData: GameMap = await response.json();
-      
-      console.log('Map loaded:', mapData);
+
+      console.log("Map loaded:", mapData);
       setGameMap(mapData);
-      
+
       const enemyPath = generateEnemyPath(mapData);
       setEnemyPath(enemyPath);
     } catch (error) {
-      console.error('Could not load map:', error);
-      
+      console.error("Could not load map:", error);
+
       // Fallback to embedded map data
       const fallbackMap: GameMap = {
         map: [
-          ["free", "free", "free", "free", "free", "free", "free", "free", "free", "free"],
-          ["free", "free", "free", "free", "free", "free", "free", "free", "free", "free"],
-          ["road", "road", "road", "free", "road", "road", "road", "free", "road", "road"],
-          ["free", "free", "road", "free", "road", "free", "road", "free", "road", "free"],
-          ["free", "free", "road", "free", "road", "free", "road", "free", "road", "free"],
-          ["free", "free", "road", "road", "road", "free", "road", "road", "road", "free"],
-          ["free", "free", "free", "free", "free", "free", "free", "free", "free", "free"],
-          ["free", "free", "free", "free", "free", "free", "free", "free", "free", "free"],
-          ["free", "free", "free", "free", "free", "free", "free", "free", "free", "free"]
+          [
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+          ],
+          [
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+          ],
+          [
+            "road",
+            "road",
+            "road",
+            "free",
+            "road",
+            "road",
+            "road",
+            "free",
+            "road",
+            "road",
+          ],
+          [
+            "free",
+            "free",
+            "road",
+            "free",
+            "road",
+            "free",
+            "road",
+            "free",
+            "road",
+            "free",
+          ],
+          [
+            "free",
+            "free",
+            "road",
+            "free",
+            "road",
+            "free",
+            "road",
+            "free",
+            "road",
+            "free",
+          ],
+          [
+            "free",
+            "free",
+            "road",
+            "road",
+            "road",
+            "free",
+            "road",
+            "road",
+            "road",
+            "free",
+          ],
+          [
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+          ],
+          [
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+          ],
+          [
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+            "free",
+          ],
         ],
-        tileSize: 64
+        tileSize: 64,
       };
-      
-      console.log('Using fallback map data');
+
+      console.log("Using fallback map data");
       setGameMap(fallbackMap);
-      
+
       const enemyPath = generateEnemyPath(fallbackMap);
       setEnemyPath(enemyPath);
     }
