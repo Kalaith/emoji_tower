@@ -1,15 +1,7 @@
-import { create } from "zustand";
-import { persist, devtools } from "zustand/middleware";
-import type {
-  GameState,
-  Tower,
-  Enemy,
-  Projectile,
-  TowerType,
-  PathPoint,
-  GameMap,
-} from "../types";
-import { gameData } from "../data/gameData";
+import { create } from 'zustand';
+import { persist, devtools } from 'zustand/middleware';
+import type { GameState, Tower, Enemy, Projectile, TowerType, PathPoint, GameMap } from '../types';
+import { gameData } from '../data/gameData';
 
 interface GameStore extends GameState {
   // Actions
@@ -57,12 +49,12 @@ const initialState: GameState = {
   waveInProgress: false,
   gameOver: false,
   upgradeLevels: {
-    "Tower Damage": 0,
-    "Tower Range": 0,
-    "Starting Gold": 0,
-    "XP Multiplier": 0,
-    "Wave Delay": 0,
-    "Auto-Start": 0,
+    'Tower Damage': 0,
+    'Tower Range': 0,
+    'Starting Gold': 0,
+    'XP Multiplier': 0,
+    'Wave Delay': 0,
+    'Auto-Start': 0,
   },
   enemyPath: [],
   gameMap: null,
@@ -74,11 +66,11 @@ export const useGameStore = create<GameStore>()(
       (set, get) => ({
         ...initialState,
 
-        setGameMap: (gameMap) => set({ gameMap }),
+        setGameMap: gameMap => set({ gameMap }),
 
-        setEnemyPath: (enemyPath) => set({ enemyPath }),
+        setEnemyPath: enemyPath => set({ enemyPath }),
 
-        selectTowerType: (towerType) => set({ selectedTowerType: towerType }),
+        selectTowerType: towerType => set({ selectedTowerType: towerType }),
 
         placeTower: (x, y) => {
           const state = get();
@@ -93,17 +85,12 @@ export const useGameStore = create<GameStore>()(
           const gridY = Math.floor(y / tileSize);
 
           // Check bounds
-          if (
-            gridY < 0 ||
-            gridY >= map.length ||
-            gridX < 0 ||
-            gridX >= map[0].length
-          ) {
+          if (gridY < 0 || gridY >= map.length || gridX < 0 || gridX >= map[0].length) {
             return false;
           }
 
           // Check if position is free
-          if (map[gridY][gridX] !== "free") {
+          if (map[gridY][gridX] !== 'free') {
             return false;
           }
 
@@ -111,9 +98,7 @@ export const useGameStore = create<GameStore>()(
           const towerX = gridX * tileSize + tileSize / 2;
           const towerY = gridY * tileSize + tileSize / 2;
 
-          const isOccupied = towers.some(
-            (tower) => tower.x === towerX && tower.y === towerY,
-          );
+          const isOccupied = towers.some(tower => tower.x === towerX && tower.y === towerY);
 
           if (isOccupied) {
             return false;
@@ -121,11 +106,9 @@ export const useGameStore = create<GameStore>()(
 
           // Create tower with upgrades applied
           const rangeMultiplier =
-            1 +
-            state.upgradeLevels["Tower Range"] * gameData.upgrades[1].effect;
+            1 + state.upgradeLevels['Tower Range'] * gameData.upgrades[1].effect;
           const damageMultiplier =
-            1 +
-            state.upgradeLevels["Tower Damage"] * gameData.upgrades[0].effect;
+            1 + state.upgradeLevels['Tower Damage'] * gameData.upgrades[0].effect;
 
           const tower: Tower = {
             x: towerX,
@@ -136,7 +119,7 @@ export const useGameStore = create<GameStore>()(
             damage: selectedTowerType.damage * damageMultiplier,
           };
 
-          set((state) => ({
+          set(state => ({
             towers: [...state.towers, tower],
             gold: state.gold - selectedTowerType.cost,
           }));
@@ -151,12 +134,11 @@ export const useGameStore = create<GameStore>()(
           }
         },
 
-        pauseGame: () => set((state) => ({ isPaused: !state.isPaused })),
+        pauseGame: () => set(state => ({ isPaused: !state.isPaused })),
 
         toggleSpeed: () =>
-          set((state) => ({
-            gameSpeed:
-              state.gameSpeed === 1 ? 2 : state.gameSpeed === 2 ? 4 : 1,
+          set(state => ({
+            gameSpeed: state.gameSpeed === 1 ? 2 : state.gameSpeed === 2 ? 4 : 1,
           })),
 
         resetGame: () => set(initialState),
@@ -164,7 +146,7 @@ export const useGameStore = create<GameStore>()(
         restartGame: () => {
           const state = get();
           const startingGoldBonus =
-            state.upgradeLevels["Starting Gold"] * gameData.upgrades[2].effect;
+            state.upgradeLevels['Starting Gold'] * gameData.upgrades[2].effect;
 
           set({
             ...initialState,
@@ -181,38 +163,36 @@ export const useGameStore = create<GameStore>()(
           // Tower, enemy, and projectile updates will be handled in the components
         },
 
-        addTower: (tower) =>
-          set((state) => ({ towers: [...state.towers, tower] })),
+        addTower: tower => set(state => ({ towers: [...state.towers, tower] })),
 
-        addEnemy: (enemy) =>
-          set((state) => ({ enemies: [...state.enemies, enemy] })),
+        addEnemy: enemy => set(state => ({ enemies: [...state.enemies, enemy] })),
 
-        addProjectile: (projectile) =>
-          set((state) => ({ projectiles: [...state.projectiles, projectile] })),
+        addProjectile: projectile =>
+          set(state => ({ projectiles: [...state.projectiles, projectile] })),
 
-        removeTower: (index) =>
-          set((state) => ({
+        removeTower: index =>
+          set(state => ({
             towers: state.towers.filter((_, i) => i !== index),
           })),
 
-        removeEnemy: (index) =>
-          set((state) => ({
+        removeEnemy: index =>
+          set(state => ({
             enemies: state.enemies.filter((_, i) => i !== index),
           })),
 
-        removeProjectile: (index) =>
-          set((state) => ({
+        removeProjectile: index =>
+          set(state => ({
             projectiles: state.projectiles.filter((_, i) => i !== index),
           })),
 
-        updateTowers: (towers) => set({ towers }),
+        updateTowers: towers => set({ towers }),
 
-        updateEnemies: (enemies) => set({ enemies }),
+        updateEnemies: enemies => set({ enemies }),
 
-        updateProjectiles: (projectiles) => set({ projectiles }),
+        updateProjectiles: projectiles => set({ projectiles }),
 
-        takeDamage: (damage) =>
-          set((state) => {
+        takeDamage: damage =>
+          set(state => {
             const newLives = Math.max(0, state.lives - damage);
             return {
               lives: newLives,
@@ -220,56 +200,55 @@ export const useGameStore = create<GameStore>()(
             };
           }),
 
-        earnGold: (amount) => set((state) => ({ gold: state.gold + amount })),
+        earnGold: amount => set(state => ({ gold: state.gold + amount })),
 
-        earnXP: (amount) => {
+        earnXP: amount => {
           const state = get();
           const xpMultiplier =
-            1 +
-            state.upgradeLevels["XP Multiplier"] * gameData.upgrades[3].effect;
+            1 + state.upgradeLevels['XP Multiplier'] * gameData.upgrades[3].effect;
           const finalAmount = Math.floor(amount * xpMultiplier);
-          set((state) => ({ xp: state.xp + finalAmount }));
+          set(state => ({ xp: state.xp + finalAmount }));
         },
 
-        spendGold: (amount) => {
+        spendGold: amount => {
           const state = get();
           if (state.gold >= amount) {
-            set((state) => ({ gold: state.gold - amount }));
+            set(state => ({ gold: state.gold - amount }));
             return true;
           }
           return false;
         },
 
-        spendXP: (amount) => {
+        spendXP: amount => {
           const state = get();
           if (state.xp >= amount) {
-            set((state) => ({ xp: state.xp - amount }));
+            set(state => ({ xp: state.xp - amount }));
             return true;
           }
           return false;
         },
 
-        upgradeLevel: (upgradeName) =>
-          set((state) => ({
+        upgradeLevel: upgradeName =>
+          set(state => ({
             upgradeLevels: {
               ...state.upgradeLevels,
               [upgradeName]: state.upgradeLevels[upgradeName] + 1,
             },
           })),
 
-        setWaveInProgress: (inProgress) => set({ waveInProgress: inProgress }),
+        setWaveInProgress: inProgress => set({ waveInProgress: inProgress }),
 
-        setGameOver: (gameOver) => set({ gameOver }),
+        setGameOver: gameOver => set({ gameOver }),
 
         nextWave: () =>
-          set((state) => ({
+          set(state => ({
             wave: state.wave + 1,
             waveInProgress: false,
           })),
       }),
       {
-        name: "emoji-tower-game-store",
-        partialize: (state) => ({
+        name: 'emoji-tower-game-store',
+        partialize: state => ({
           gold: state.gold,
           xp: state.xp,
           lives: state.lives,
@@ -277,7 +256,7 @@ export const useGameStore = create<GameStore>()(
           towers: state.towers,
           upgradeLevels: state.upgradeLevels,
         }),
-      },
-    ),
-  ),
+      }
+    )
+  )
 );

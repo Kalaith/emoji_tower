@@ -1,7 +1,7 @@
-import { useEffect, useRef, useCallback } from "react";
-import { useGameStore } from "../stores/gameStore";
-import { gameData } from "../data/gameData";
-import type { Enemy, Projectile, Tower } from "../types";
+import { useEffect, useRef, useCallback } from 'react';
+import { useGameStore } from '../stores/gameStore';
+import { gameData } from '../data/gameData';
+import type { Enemy, Projectile, Tower } from '../types';
 
 export const useGameLoop = () => {
   const {
@@ -32,7 +32,7 @@ export const useGameLoop = () => {
 
   const updateTower = useCallback(
     (tower: Tower): void => {
-      if (!tower || typeof tower !== "object") return;
+      if (!tower || typeof tower !== 'object') return;
 
       const now = Date.now();
       if (now - tower.lastShot < tower.type.speed / gameSpeed) return;
@@ -41,10 +41,8 @@ export const useGameLoop = () => {
       let closestEnemy: Enemy | null = null;
       let closestDistance = tower.range;
 
-      enemies.forEach((enemy) => {
-        const distance = Math.sqrt(
-          (enemy.x - tower.x) ** 2 + (enemy.y - tower.y) ** 2,
-        );
+      enemies.forEach(enemy => {
+        const distance = Math.sqrt((enemy.x - tower.x) ** 2 + (enemy.y - tower.y) ** 2);
         if (distance <= tower.range && distance < closestDistance) {
           closestEnemy = enemy;
           closestDistance = distance;
@@ -64,7 +62,7 @@ export const useGameLoop = () => {
         addProjectile(projectile);
       }
     },
-    [enemies, gameSpeed, addProjectile],
+    [enemies, gameSpeed, addProjectile]
   );
 
   const updateEnemy = useCallback(
@@ -82,9 +80,7 @@ export const useGameLoop = () => {
       if (enemy.pathIndex < enemyPath.length - 1) {
         const current = enemyPath[enemy.pathIndex];
         const next = enemyPath[enemy.pathIndex + 1];
-        const segmentLength = Math.sqrt(
-          (next.x - current.x) ** 2 + (next.y - current.y) ** 2,
-        );
+        const segmentLength = Math.sqrt((next.x - current.x) ** 2 + (next.y - current.y) ** 2);
 
         if (segmentLength === 0) {
           enemy.pathIndex++;
@@ -108,8 +104,7 @@ export const useGameLoop = () => {
           const currentPoint = enemyPath[enemy.pathIndex];
           const nextPoint = enemyPath[enemy.pathIndex + 1];
           const currentSegmentLength = Math.sqrt(
-            (nextPoint.x - currentPoint.x) ** 2 +
-              (nextPoint.y - currentPoint.y) ** 2,
+            (nextPoint.x - currentPoint.x) ** 2 + (nextPoint.y - currentPoint.y) ** 2
           );
 
           if (currentSegmentLength > 0) {
@@ -133,7 +128,7 @@ export const useGameLoop = () => {
 
       return false;
     },
-    [enemyPath, gameSpeed, takeDamage, removeEnemy],
+    [enemyPath, gameSpeed, takeDamage, removeEnemy]
   );
 
   const updateProjectile = useCallback(
@@ -153,23 +148,15 @@ export const useGameLoop = () => {
         target.health -= projectile.damage;
 
         // Special effects
-        if (
-          projectile.towerType.name === "Ice" &&
-          target.type.name !== "Robot"
-        ) {
+        if (projectile.towerType.name === 'Ice' && target.type.name !== 'Robot') {
           target.slowEffect = Math.max(target.slowEffect, 0.5);
         }
 
-        if (
-          projectile.towerType.name === "Fire" ||
-          projectile.towerType.name === "Bomb"
-        ) {
+        if (projectile.towerType.name === 'Fire' || projectile.towerType.name === 'Bomb') {
           // Area damage
-          const areaRange = projectile.towerType.name === "Fire" ? 50 : 80;
-          enemies.forEach((enemy) => {
-            const areaDist = Math.sqrt(
-              (enemy.x - target.x) ** 2 + (enemy.y - target.y) ** 2,
-            );
+          const areaRange = projectile.towerType.name === 'Fire' ? 50 : 80;
+          enemies.forEach(enemy => {
+            const areaDist = Math.sqrt((enemy.x - target.x) ** 2 + (enemy.y - target.y) ** 2);
             if (areaDist <= areaRange && enemy !== target) {
               enemy.health -= projectile.damage * 0.5;
             }
@@ -182,7 +169,7 @@ export const useGameLoop = () => {
           earnGold(goldReward);
           earnXP(xpReward);
 
-          const enemyIndex = enemies.findIndex((e) => e === target);
+          const enemyIndex = enemies.findIndex(e => e === target);
           if (enemyIndex > -1) {
             removeEnemy(enemyIndex);
           }
@@ -198,15 +185,14 @@ export const useGameLoop = () => {
 
       return false;
     },
-    [enemies, earnGold, earnXP, removeEnemy, removeProjectile, gameSpeed],
+    [enemies, earnGold, earnXP, removeEnemy, removeProjectile, gameSpeed]
   );
 
   const spawnEnemies = useCallback(() => {
     if (!waveInProgress) return;
 
     const now = Date.now();
-    const spawnDelay =
-      1000 / (1 + upgradeLevels["Wave Delay"] * gameData.upgrades[4].effect);
+    const spawnDelay = 1000 / (1 + upgradeLevels['Wave Delay'] * gameData.upgrades[4].effect);
     const enemiesInWave = Math.min(5 + wave, 20);
 
     if (waveEnemiesSpawnedRef.current >= enemiesInWave) return;
@@ -224,12 +210,8 @@ export const useGameLoop = () => {
         x: enemyPath.length > 0 ? enemyPath[0].x : 0,
         y: enemyPath.length > 0 ? enemyPath[0].y : 0,
         type: enemyType,
-        health:
-          enemyType.health *
-          Math.pow(gameData.gameSettings.waveScaling, wave - 1),
-        maxHealth:
-          enemyType.health *
-          Math.pow(gameData.gameSettings.waveScaling, wave - 1),
+        health: enemyType.health * Math.pow(gameData.gameSettings.waveScaling, wave - 1),
+        maxHealth: enemyType.health * Math.pow(gameData.gameSettings.waveScaling, wave - 1),
         speed: enemyType.speed,
         pathIndex: 0,
         progress: 0,
@@ -246,7 +228,7 @@ export const useGameLoop = () => {
     if (isPaused || gameOver) return;
 
     // Update towers
-    towers.forEach((tower) => updateTower(tower));
+    towers.forEach(tower => updateTower(tower));
 
     // Update enemies
     const updatedEnemies = [...enemies];
@@ -274,7 +256,7 @@ export const useGameLoop = () => {
       waveEnemiesSpawnedRef.current = 0;
 
       // Auto-start next wave if upgrade is purchased
-      if (upgradeLevels["Auto-Start"] > 0) {
+      if (upgradeLevels['Auto-Start'] > 0) {
         setTimeout(() => {
           setWaveInProgress(true);
         }, 3000);

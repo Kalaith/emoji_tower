@@ -1,12 +1,11 @@
-import React from "react";
-import { useGameStore } from "../stores/gameStore";
-import { gameData } from "../data/gameData";
-import type { TowerType } from "../types";
-import { cn } from "../utils/cn";
+import React from 'react';
+import { useGameStore } from '../stores/gameStore';
+import { gameData } from '../data/gameData';
+import type { TowerType } from '../types';
+import { cn } from '../utils/cn';
 
 export const TowerPanel: React.FC = () => {
-  const { gold, selectedTowerType, upgradeLevels, selectTowerType } =
-    useGameStore();
+  const { gold, selectedTowerType, upgradeLevels, selectTowerType } = useGameStore();
 
   const handleSelectTower = (towerType: TowerType) => {
     if (gold >= towerType.cost) {
@@ -15,10 +14,8 @@ export const TowerPanel: React.FC = () => {
   };
 
   const getModifiedStats = (tower: TowerType) => {
-    const damageMultiplier =
-      1 + upgradeLevels["Tower Damage"] * gameData.upgrades[0].effect;
-    const rangeMultiplier =
-      1 + upgradeLevels["Tower Range"] * gameData.upgrades[1].effect;
+    const damageMultiplier = 1 + upgradeLevels['Tower Damage'] * gameData.upgrades[0].effect;
+    const rangeMultiplier = 1 + upgradeLevels['Tower Range'] * gameData.upgrades[1].effect;
 
     return {
       damage: Math.floor(tower.damage * damageMultiplier),
@@ -31,7 +28,7 @@ export const TowerPanel: React.FC = () => {
       <h3 className="text-xl font-semibold text-center mb-4">🏗️ Towers</h3>
 
       <div className="grid grid-cols-2 gap-3 mb-6">
-        {gameData.towerTypes.map((tower) => {
+        {gameData.towerTypes.map(tower => {
           const canAfford = gold >= tower.cost;
           const isSelected = selectedTowerType?.name === tower.name;
 
@@ -39,15 +36,12 @@ export const TowerPanel: React.FC = () => {
             <div
               key={tower.name}
               className={cn(
-                "flex flex-col items-center p-3 border-2 rounded-lg cursor-pointer transition-all text-center",
-                isSelected &&
-                  canAfford &&
-                  "border-blue-600 bg-blue-600 text-white animate-pulse",
+                'flex flex-col items-center p-3 border-2 rounded-lg cursor-pointer transition-all text-center',
+                isSelected && canAfford && 'border-blue-600 bg-blue-600 text-white animate-pulse',
                 !isSelected &&
                   canAfford &&
-                  "border-gray-300 bg-white hover:border-blue-600 hover:bg-gray-50",
-                !canAfford &&
-                  "border-gray-300 bg-white opacity-50 cursor-not-allowed",
+                  'border-gray-300 bg-white hover:border-blue-600 hover:bg-gray-50',
+                !canAfford && 'border-gray-300 bg-white opacity-50 cursor-not-allowed'
               )}
               onClick={() => handleSelectTower(tower)}
             >
@@ -66,12 +60,10 @@ export const TowerPanel: React.FC = () => {
             <div className="text-3xl">{selectedTowerType.emoji}</div>
             <div className="flex-1 text-sm">
               <div className="mb-1">
-                <strong>Damage:</strong>{" "}
-                {getModifiedStats(selectedTowerType).damage}
+                <strong>Damage:</strong> {getModifiedStats(selectedTowerType).damage}
               </div>
               <div className="mb-1">
-                <strong>Range:</strong>{" "}
-                {getModifiedStats(selectedTowerType).range}
+                <strong>Range:</strong> {getModifiedStats(selectedTowerType).range}
               </div>
               <div className="mb-1">
                 <strong>Speed:</strong> {selectedTowerType.speed}ms
@@ -81,9 +73,7 @@ export const TowerPanel: React.FC = () => {
               </div>
             </div>
           </div>
-          <p className="text-sm text-gray-600">
-            {selectedTowerType.description}
-          </p>
+          <p className="text-sm text-gray-600">{selectedTowerType.description}</p>
         </div>
       )}
 
@@ -91,11 +81,7 @@ export const TowerPanel: React.FC = () => {
         <h4 className="font-semibold mb-2">🌊 Next Wave</h4>
         <div className="flex gap-2 mt-2 flex-wrap">
           {gameData.enemyTypes.slice(0, 3).map((enemy, index) => (
-            <div
-              key={index}
-              className="text-xl p-1 rounded bg-gray-100"
-              title={enemy.description}
-            >
+            <div key={index} className="text-xl p-1 rounded bg-gray-100" title={enemy.description}>
               {enemy.emoji}
             </div>
           ))}

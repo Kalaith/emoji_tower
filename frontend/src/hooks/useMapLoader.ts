@@ -1,6 +1,6 @@
-import { useEffect, useCallback } from "react";
-import { useGameStore } from "../stores/gameStore";
-import type { GameMap, PathPoint } from "../types";
+import { useEffect, useCallback } from 'react';
+import { useGameStore } from '../stores/gameStore';
+import type { GameMap, PathPoint } from '../types';
 
 export const useMapLoader = () => {
   const { setGameMap, setEnemyPath } = useGameStore();
@@ -12,28 +12,28 @@ export const useMapLoader = () => {
     // Find start node (first row with a road in the first column)
     let startNode: { r: number; c: number } | null = null;
     for (let r = 0; r < map.length; r++) {
-      if (map[r][0] === "road") {
+      if (map[r][0] === 'road') {
         startNode = { r, c: 0 };
         break;
       }
     }
 
     if (!startNode) {
-      console.error("No valid start node found in the first column.");
+      console.error('No valid start node found in the first column.');
       return [];
     }
 
     // Find end node (last row with a road in the last column)
     let endNode: { r: number; c: number } | null = null;
     for (let r = map.length - 1; r >= 0; r--) {
-      if (map[r][map[0].length - 1] === "road") {
+      if (map[r][map[0].length - 1] === 'road') {
         endNode = { r, c: map[0].length - 1 };
         break;
       }
     }
 
     if (!endNode) {
-      console.error("No valid end node found in the last column.");
+      console.error('No valid end node found in the last column.');
       return [];
     }
 
@@ -69,7 +69,7 @@ export const useMapLoader = () => {
           newRow < map.length &&
           newCol >= 0 &&
           newCol < map[0].length &&
-          map[newRow][newCol] === "road" &&
+          map[newRow][newCol] === 'road' &&
           !visited.has(`${newRow},${newCol}`)
         ) {
           queue.push({ r: newRow, c: newCol });
@@ -99,9 +99,9 @@ export const useMapLoader = () => {
       }
       path.push(...pathPoints);
 
-      console.log("Generated enemy path with", path.length, "points");
+      console.log('Generated enemy path with', path.length, 'points');
     } else {
-      console.error("No valid path found from start to end.");
+      console.error('No valid path found from start to end.');
     }
 
     return path;
@@ -109,136 +109,37 @@ export const useMapLoader = () => {
 
   const loadMap = useCallback(async () => {
     try {
-      const response = await fetch("/map.json");
+      const response = await fetch('/map.json');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const mapData: GameMap = await response.json();
 
-      console.log("Map loaded:", mapData);
+      console.log('Map loaded:', mapData);
       setGameMap(mapData);
 
       const enemyPath = generateEnemyPath(mapData);
       setEnemyPath(enemyPath);
     } catch (error) {
-      console.error("Could not load map:", error);
+      console.error('Could not load map:', error);
 
       // Fallback to embedded map data
       const fallbackMap: GameMap = {
         map: [
-          [
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-          ],
-          [
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-          ],
-          [
-            "road",
-            "road",
-            "road",
-            "free",
-            "road",
-            "road",
-            "road",
-            "free",
-            "road",
-            "road",
-          ],
-          [
-            "free",
-            "free",
-            "road",
-            "free",
-            "road",
-            "free",
-            "road",
-            "free",
-            "road",
-            "free",
-          ],
-          [
-            "free",
-            "free",
-            "road",
-            "free",
-            "road",
-            "free",
-            "road",
-            "free",
-            "road",
-            "free",
-          ],
-          [
-            "free",
-            "free",
-            "road",
-            "road",
-            "road",
-            "free",
-            "road",
-            "road",
-            "road",
-            "free",
-          ],
-          [
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-          ],
-          [
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-          ],
-          [
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-            "free",
-          ],
+          ['free', 'free', 'free', 'free', 'free', 'free', 'free', 'free', 'free', 'free'],
+          ['free', 'free', 'free', 'free', 'free', 'free', 'free', 'free', 'free', 'free'],
+          ['road', 'road', 'road', 'free', 'road', 'road', 'road', 'free', 'road', 'road'],
+          ['free', 'free', 'road', 'free', 'road', 'free', 'road', 'free', 'road', 'free'],
+          ['free', 'free', 'road', 'free', 'road', 'free', 'road', 'free', 'road', 'free'],
+          ['free', 'free', 'road', 'road', 'road', 'free', 'road', 'road', 'road', 'free'],
+          ['free', 'free', 'free', 'free', 'free', 'free', 'free', 'free', 'free', 'free'],
+          ['free', 'free', 'free', 'free', 'free', 'free', 'free', 'free', 'free', 'free'],
+          ['free', 'free', 'free', 'free', 'free', 'free', 'free', 'free', 'free', 'free'],
         ],
         tileSize: 64,
       };
 
-      console.log("Using fallback map data");
+      console.log('Using fallback map data');
       setGameMap(fallbackMap);
 
       const enemyPath = generateEnemyPath(fallbackMap);

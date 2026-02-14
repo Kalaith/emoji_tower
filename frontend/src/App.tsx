@@ -1,11 +1,11 @@
-import React from "react";
-import { GameHeader } from "./components/GameHeader";
-import { GameCanvas } from "./components/GameCanvas";
-import { GameControls } from "./components/GameControls";
-import { TowerPanel } from "./components/TowerPanel";
-import { GameOverModal } from "./components/GameOverModal";
-import { useGameLoop } from "./hooks/useGameLoop";
-import { useMapLoader } from "./hooks/useMapLoader";
+import React from 'react';
+import { GameHeader } from './components/GameHeader';
+import { GameCanvas } from './components/GameCanvas';
+import { GameControls } from './components/GameControls';
+import { TowerPanel } from './components/TowerPanel';
+import { GameOverModal } from './components/GameOverModal';
+import { useGameLoop } from './hooks/useGameLoop';
+import { useMapLoader } from './hooks/useMapLoader';
 
 const App: React.FC = () => {
   useMapLoader();
