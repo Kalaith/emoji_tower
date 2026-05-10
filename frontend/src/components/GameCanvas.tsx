@@ -179,7 +179,7 @@ export const GameCanvas: React.FC = () => {
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
 
-    placeTower(x, y);
+    void placeTower(x, y);
   };
 
   return (

@@ -4,14 +4,12 @@ import { gameData } from '../data/gameData';
 import { Button } from './ui/Button';
 
 export const GameOverModal: React.FC = () => {
-  const { gameOver, wave, xp, upgradeLevels, spendXP, upgradeLevel, restartGame } = useGameStore();
+  const { gameOver, wave, xp, upgradeLevels, buyUpgrade, restartGame } = useGameStore();
 
   if (!gameOver) return null;
 
-  const handleUpgrade = (upgradeName: string, cost: number) => {
-    if (spendXP(cost)) {
-      upgradeLevel(upgradeName);
-    }
+  const handleUpgrade = (upgradeName: string) => {
+    void buyUpgrade(upgradeName);
   };
 
   return (
@@ -50,7 +48,7 @@ export const GameOverModal: React.FC = () => {
                 <div className="text-sm text-gray-600 mb-3">{upgrade.description}</div>
 
                 <Button
-                  onClick={() => handleUpgrade(upgrade.name, cost)}
+                  onClick={() => handleUpgrade(upgrade.name)}
                   disabled={!canAfford}
                   variant={canAfford ? 'primary' : 'outline'}
                   size="sm"
@@ -64,7 +62,7 @@ export const GameOverModal: React.FC = () => {
         </div>
 
         <div className="text-center">
-          <Button onClick={restartGame} variant="primary" size="lg">
+          <Button onClick={() => void restartGame()} variant="primary" size="lg">
             🔄 Restart Run
           </Button>
         </div>

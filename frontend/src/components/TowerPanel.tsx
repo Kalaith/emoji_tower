@@ -8,9 +8,7 @@ export const TowerPanel: React.FC = () => {
   const { gold, selectedTowerType, upgradeLevels, selectTowerType } = useGameStore();
 
   const handleSelectTower = (towerType: TowerType) => {
-    if (gold >= towerType.cost) {
-      selectTowerType(towerType);
-    }
+    void selectTowerType(towerType);
   };
 
   const getModifiedStats = (tower: TowerType) => {

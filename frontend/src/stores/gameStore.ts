@@ -1,44 +1,33 @@
 import { create } from 'zustand';
 import { persist, devtools } from 'zustand/middleware';
-import type { GameState, Tower, Enemy, Projectile, TowerType, PathPoint, GameMap } from '../types';
-import { gameData } from '../data/gameData';
+import { webhatcheryGameApi, type WebHatcheryGameState } from '../api/webhatcheryGameApi';
+import type { Enemy, GameMap, GameState, PathPoint, Projectile, Tower, TowerType } from '../types';
+import { useWebHatcherySessionStore } from './webhatcherySessionStore';
 
 interface GameStore extends GameState {
-  // Actions
+  isLoading: boolean;
+  error: string | null;
+  initializeBackend: () => Promise<void>;
+  selectTowerType: (towerType: TowerType | null) => Promise<void>;
+  placeTower: (x: number, y: number) => Promise<boolean>;
+  startWave: () => Promise<void>;
+  pauseGame: () => Promise<void>;
+  toggleSpeed: () => Promise<void>;
+  resetGame: () => Promise<void>;
+  restartGame: () => Promise<void>;
+  buyUpgrade: (upgradeName: string) => Promise<boolean>;
+  tickGame: () => Promise<void>;
   setGameMap: (gameMap: GameMap) => void;
   setEnemyPath: (enemyPath: PathPoint[]) => void;
-  selectTowerType: (towerType: TowerType | null) => void;
-  placeTower: (x: number, y: number) => boolean;
-  startWave: () => void;
-  pauseGame: () => void;
-  toggleSpeed: () => void;
-  resetGame: () => void;
-  restartGame: () => void;
-  updateGame: () => void;
-  addTower: (tower: Tower) => void;
-  addEnemy: (enemy: Enemy) => void;
-  addProjectile: (projectile: Projectile) => void;
-  removeTower: (index: number) => void;
-  removeEnemy: (index: number) => void;
-  removeProjectile: (index: number) => void;
   updateTowers: (towers: Tower[]) => void;
   updateEnemies: (enemies: Enemy[]) => void;
   updateProjectiles: (projectiles: Projectile[]) => void;
-  takeDamage: (damage: number) => void;
-  earnGold: (amount: number) => void;
-  earnXP: (amount: number) => void;
-  spendGold: (amount: number) => boolean;
-  spendXP: (amount: number) => boolean;
-  upgradeLevel: (upgradeName: string) => void;
-  setWaveInProgress: (inProgress: boolean) => void;
-  setGameOver: (gameOver: boolean) => void;
-  nextWave: () => void;
 }
 
 const initialState: GameState = {
-  gold: gameData.gameSettings.startingGold,
+  gold: 0,
   xp: 0,
-  lives: gameData.gameSettings.startingLives,
+  lives: 0,
   wave: 1,
   gameSpeed: 1,
   isPaused: false,
@@ -60,191 +49,168 @@ const initialState: GameState = {
   gameMap: null,
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const applyBackendGame = (set: (state: Partial<GameStore>) => void, game: WebHatcheryGameState): void => {
+  const state = game.save.state;
+  if (!isRecord(state)) {
+    set({ isLoading: false, error: 'Backend returned an invalid game state.' });
+    return;
+  }
+
+  set({
+    gold: typeof state.gold === 'number' ? state.gold : 0,
+    xp: typeof state.xp === 'number' ? state.xp : 0,
+    lives: typeof state.lives === 'number' ? state.lives : 0,
+    wave: typeof state.wave === 'number' ? state.wave : 1,
+    gameSpeed: typeof state.gameSpeed === 'number' ? state.gameSpeed : 1,
+    isPaused: state.isPaused === true,
+    selectedTowerType: isRecord(state.selectedTowerType) ? (state.selectedTowerType as unknown as TowerType) : null,
+    towers: Array.isArray(state.towers) ? (state.towers as Tower[]) : [],
+    enemies: Array.isArray(state.enemies) ? (state.enemies as Enemy[]) : [],
+    projectiles: Array.isArray(state.projectiles) ? (state.projectiles as Projectile[]) : [],
+    waveInProgress: state.waveInProgress === true,
+    gameOver: state.gameOver === true,
+    upgradeLevels: isRecord(state.upgradeLevels)
+      ? (state.upgradeLevels as Record<string, number>)
+      : initialState.upgradeLevels,
+    enemyPath: Array.isArray(state.enemyPath) ? (state.enemyPath as PathPoint[]) : [],
+    gameMap: isRecord(state.gameMap) ? (state.gameMap as unknown as GameMap) : null,
+    isLoading: false,
+    error: null,
+  });
+};
+
+const loadBackendGame = async (): Promise<WebHatcheryGameState> => {
+  const session = useWebHatcherySessionStore.getState();
+  try {
+    return await session.loadGame();
+  } catch {
+    return await session.continueAsGuest();
+  }
+};
+
+const runIntent = async (
+  set: (state: Partial<GameStore>) => void,
+  intent: string,
+  payload: Record<string, unknown> = {},
+): Promise<WebHatcheryGameState> => {
+  set({ isLoading: true, error: null });
+  const game = await webhatcheryGameApi.applyIntent(intent, payload);
+  applyBackendGame(set, game);
+  return game;
+};
+
 export const useGameStore = create<GameStore>()(
   devtools(
     persist(
-      (set, get) => ({
+      (set) => ({
         ...initialState,
+        isLoading: false,
+        error: null,
+
+        initializeBackend: async () => {
+          set({ isLoading: true, error: null });
+          try {
+            applyBackendGame(set, await loadBackendGame());
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unable to initialize game.';
+            set({ isLoading: false, error: message });
+          }
+        },
+
+        selectTowerType: async towerType => {
+          try {
+            await runIntent(set, 'select_tower_type', { towerName: towerType?.name ?? null });
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unable to select tower.';
+            set({ isLoading: false, error: message });
+          }
+        },
+
+        placeTower: async (x, y) => {
+          try {
+            await runIntent(set, 'place_tower', { x, y });
+            return true;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unable to place tower.';
+            set({ isLoading: false, error: message });
+            return false;
+          }
+        },
+
+        startWave: async () => {
+          try {
+            await runIntent(set, 'start_wave');
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unable to start wave.';
+            set({ isLoading: false, error: message });
+          }
+        },
+
+        pauseGame: async () => {
+          try {
+            await runIntent(set, 'pause_game');
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unable to pause game.';
+            set({ isLoading: false, error: message });
+          }
+        },
+
+        toggleSpeed: async () => {
+          try {
+            await runIntent(set, 'toggle_speed');
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unable to change speed.';
+            set({ isLoading: false, error: message });
+          }
+        },
+
+        resetGame: async () => {
+          try {
+            await runIntent(set, 'reset_game');
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unable to reset game.';
+            set({ isLoading: false, error: message });
+          }
+        },
+
+        restartGame: async () => {
+          try {
+            await runIntent(set, 'restart_game');
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unable to restart game.';
+            set({ isLoading: false, error: message });
+          }
+        },
+
+        buyUpgrade: async upgradeName => {
+          try {
+            await runIntent(set, 'buy_upgrade', { upgradeName });
+            return true;
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unable to buy upgrade.';
+            set({ isLoading: false, error: message });
+            return false;
+          }
+        },
+
+        tickGame: async () => {
+          try {
+            const game = await webhatcheryGameApi.applyIntent('tick');
+            applyBackendGame(set, game);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unable to update game.';
+            set({ isLoading: false, error: message });
+          }
+        },
 
         setGameMap: gameMap => set({ gameMap }),
-
         setEnemyPath: enemyPath => set({ enemyPath }),
-
-        selectTowerType: towerType => set({ selectedTowerType: towerType }),
-
-        placeTower: (x, y) => {
-          const state = get();
-          const { selectedTowerType, gameMap, towers, gold } = state;
-
-          if (!selectedTowerType || !gameMap || gold < selectedTowerType.cost) {
-            return false;
-          }
-
-          const { map, tileSize } = gameMap;
-          const gridX = Math.floor(x / tileSize);
-          const gridY = Math.floor(y / tileSize);
-
-          // Check bounds
-          if (gridY < 0 || gridY >= map.length || gridX < 0 || gridX >= map[0].length) {
-            return false;
-          }
-
-          // Check if position is free
-          if (map[gridY][gridX] !== 'free') {
-            return false;
-          }
-
-          // Check if space is occupied
-          const towerX = gridX * tileSize + tileSize / 2;
-          const towerY = gridY * tileSize + tileSize / 2;
-
-          const isOccupied = towers.some(tower => tower.x === towerX && tower.y === towerY);
-
-          if (isOccupied) {
-            return false;
-          }
-
-          // Create tower with upgrades applied
-          const rangeMultiplier =
-            1 + state.upgradeLevels['Tower Range'] * gameData.upgrades[1].effect;
-          const damageMultiplier =
-            1 + state.upgradeLevels['Tower Damage'] * gameData.upgrades[0].effect;
-
-          const tower: Tower = {
-            x: towerX,
-            y: towerY,
-            type: selectedTowerType,
-            lastShot: 0,
-            range: selectedTowerType.range * rangeMultiplier,
-            damage: selectedTowerType.damage * damageMultiplier,
-          };
-
-          set(state => ({
-            towers: [...state.towers, tower],
-            gold: state.gold - selectedTowerType.cost,
-          }));
-
-          return true;
-        },
-
-        startWave: () => {
-          const state = get();
-          if (!state.waveInProgress) {
-            set({ waveInProgress: true });
-          }
-        },
-
-        pauseGame: () => set(state => ({ isPaused: !state.isPaused })),
-
-        toggleSpeed: () =>
-          set(state => ({
-            gameSpeed: state.gameSpeed === 1 ? 2 : state.gameSpeed === 2 ? 4 : 1,
-          })),
-
-        resetGame: () => set(initialState),
-
-        restartGame: () => {
-          const state = get();
-          const startingGoldBonus =
-            state.upgradeLevels['Starting Gold'] * gameData.upgrades[2].effect;
-
-          set({
-            ...initialState,
-            gold: gameData.gameSettings.startingGold + startingGoldBonus,
-            upgradeLevels: state.upgradeLevels,
-            xp: state.xp,
-            gameMap: state.gameMap,
-            enemyPath: state.enemyPath,
-          });
-        },
-
-        updateGame: () => {
-          // This will be called from the game loop
-          // Tower, enemy, and projectile updates will be handled in the components
-        },
-
-        addTower: tower => set(state => ({ towers: [...state.towers, tower] })),
-
-        addEnemy: enemy => set(state => ({ enemies: [...state.enemies, enemy] })),
-
-        addProjectile: projectile =>
-          set(state => ({ projectiles: [...state.projectiles, projectile] })),
-
-        removeTower: index =>
-          set(state => ({
-            towers: state.towers.filter((_, i) => i !== index),
-          })),
-
-        removeEnemy: index =>
-          set(state => ({
-            enemies: state.enemies.filter((_, i) => i !== index),
-          })),
-
-        removeProjectile: index =>
-          set(state => ({
-            projectiles: state.projectiles.filter((_, i) => i !== index),
-          })),
-
         updateTowers: towers => set({ towers }),
-
         updateEnemies: enemies => set({ enemies }),
-
         updateProjectiles: projectiles => set({ projectiles }),
-
-        takeDamage: damage =>
-          set(state => {
-            const newLives = Math.max(0, state.lives - damage);
-            return {
-              lives: newLives,
-              gameOver: newLives <= 0,
-            };
-          }),
-
-        earnGold: amount => set(state => ({ gold: state.gold + amount })),
-
-        earnXP: amount => {
-          const state = get();
-          const xpMultiplier =
-            1 + state.upgradeLevels['XP Multiplier'] * gameData.upgrades[3].effect;
-          const finalAmount = Math.floor(amount * xpMultiplier);
-          set(state => ({ xp: state.xp + finalAmount }));
-        },
-
-        spendGold: amount => {
-          const state = get();
-          if (state.gold >= amount) {
-            set(state => ({ gold: state.gold - amount }));
-            return true;
-          }
-          return false;
-        },
-
-        spendXP: amount => {
-          const state = get();
-          if (state.xp >= amount) {
-            set(state => ({ xp: state.xp - amount }));
-            return true;
-          }
-          return false;
-        },
-
-        upgradeLevel: upgradeName =>
-          set(state => ({
-            upgradeLevels: {
-              ...state.upgradeLevels,
-              [upgradeName]: state.upgradeLevels[upgradeName] + 1,
-            },
-          })),
-
-        setWaveInProgress: inProgress => set({ waveInProgress: inProgress }),
-
-        setGameOver: gameOver => set({ gameOver }),
-
-        nextWave: () =>
-          set(state => ({
-            wave: state.wave + 1,
-            waveInProgress: false,
-          })),
       }),
       {
         name: 'emoji-tower-game-store',
